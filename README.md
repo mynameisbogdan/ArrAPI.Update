@@ -1,12 +1,10 @@
-# Servarr Update Server
+# Arr Update Server
 
-[![Build Status](https://dev.azure.com/Servarr/Servarr/_apis/build/status/Servarr.ServarrAPI.Update?branchName=master)](https://dev.azure.com/Servarr/Servarr/_build/latest?definitionId=5&branchName=master)
-
-This is the update API of [Lidarr](https://github.com/Lidarr/Lidarr), [Prowlarr](https://github.com/Prowlarr/Prowlarr), [Radarr](https://github.com/Radarr/Radarr), and [Readarr](https://github.com/Readarr/Readarr).
+[![build](https://github.com/mynameisbogdan/ArrAPI.Update/actions/workflows/build.yml/badge.svg)](https://github.com/mynameisbogdan/ArrAPI.Update/actions/workflows/build.yml)
 
 ## Development
 
-If you want to work on **ServarrAPI.Update**, make sure you have [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) installed and [Visual Studio 2022](https://www.visualstudio.com/vs).
+If you want to work on **ArrAPI.Update**, make sure you have [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) installed and [Visual Studio](https://www.visualstudio.com/vs).
 
 ## Using Docker
 

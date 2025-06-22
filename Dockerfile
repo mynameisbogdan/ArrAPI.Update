@@ -1,14 +1,15 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:6.0.425-focal AS sdk
-WORKDIR /app
-ARG config=Release
+﻿FROM mcr.microsoft.com/dotnet/sdk:8.0.411-alpine3.22 AS build
+ARG TARGETARCH
+WORKDIR /source
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 
 COPY src ./src
+RUN dotnet publish -c Release --no-self-contained -p:PublishDir=/source/build -a $TARGETARCH src/*.sln
 
-RUN dotnet publish -c $config --no-self-contained src/*.sln
-
-FROM mcr.microsoft.com/dotnet/aspnet:6.0.33-focal
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0.17-alpine3.22
+EXPOSE 5000
 WORKDIR /app
-COPY --from=sdk /app/_output/net6.0/publish/. ./
+COPY --from=build /source/build/. ./
 
-# Docker Entry
 ENTRYPOINT ["dotnet", "ServarrAPI.dll"]

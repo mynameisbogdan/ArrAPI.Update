@@ -1,38 +1,32 @@
-version: '3'
-
 volumes:
   postgres:
     driver: local
 
 services:
   db:
-    image: postgres:11-alpine
-    restart: always
+    image: postgres:16-alpine
+    restart: unless-stopped
     ports:
-      - 5438:5432
+      - "5438:5432"
     environment:
       - POSTGRES_USER=abc
       - POSTGRES_PASSWORD=abc
-      - POSTGRES_MULTIPLE_DATABASES=radarr,lidarr,readarr
-
+      - POSTGRES_MULTIPLE_DATABASES=radarr,lidarr,readarr,prowlarr
     volumes:
       - ./pg-init-scripts:/docker-entrypoint-initdb.d
       - postgres/:/var/lib/postgresql/data
 
-  servarrupdate:
+  arrupdate:
     build: .
-    restart: always
+    restart: unless-stopped
     ports:
       - "5000:5000"
-
-    links:
+    depends_on:
       - db
-
     environment:
       - Update:DataDirectory=/data
       - Update:ApiKey=
       - Update:Project=Lidarr
       - ASPNETCORE_URLS=http://0.0.0.0:5000
-
     volumes:
-      - ./servarrupdate-data:/data
+      - ./arrupdate-data:/data
