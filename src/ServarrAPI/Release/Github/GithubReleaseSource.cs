@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Octokit;
 using ServarrAPI.Extensions;
@@ -23,16 +24,21 @@ namespace ServarrAPI.Release.Github
         private readonly Config _config;
         private readonly IUpdateService _updateService;
         private readonly IUpdateFileService _updateFileService;
+        private readonly ILogger<GithubReleaseSource> _logger;
+
         private readonly GitHubClient _gitHubClient;
         private readonly HttpClient _httpClient;
 
         public GithubReleaseSource(IUpdateService updateService,
                                    IUpdateFileService updateFileService,
-                                   IOptions<Config> config)
+                                   IOptions<Config> config,
+                                   ILogger<GithubReleaseSource> logger)
         {
             _updateService = updateService;
             _updateFileService = updateFileService;
+            _logger = logger;
             _config = config.Value;
+
             _gitHubClient = new GitHubClient(new ProductHeaderValue("ServarrAPI"));
             _httpClient = new HttpClient();
         }
@@ -154,6 +160,8 @@ namespace ServarrAPI.Release.Github
             // Calculate the hash of the zip file.
             var releaseZip = Path.Combine(_config.DataDirectory, branch.ToLowerInvariant(), releaseAsset.Name);
 
+            string releaseHash = null;
+
             try
             {
                 if (!File.Exists(releaseZip))
@@ -165,27 +173,14 @@ namespace ServarrAPI.Release.Github
                     await artifactStream.CopyToAsync(fileStream);
                 }
 
-                string releaseHash;
-                await using (var stream = File.OpenRead(releaseZip))
-                using (var sha = SHA256.Create())
-                {
-                    releaseHash = BitConverter.ToString(await sha.ComputeHashAsync(stream)).Replace("-", "").ToLowerInvariant();
-                }
+                await using var stream = File.OpenRead(releaseZip);
+                using var sha = SHA256.Create();
 
-                // Add to database.
-                var updateFile = new UpdateFileEntity
-                {
-                    UpdateId = updateId,
-                    OperatingSystem = operatingSystem.Value,
-                    Architecture = arch,
-                    Runtime = runtime,
-                    Filename = releaseAsset.Name,
-                    Url = releaseAsset.BrowserDownloadUrl,
-                    Hash = releaseHash,
-                    Installer = installer
-                };
-
-                await _updateFileService.Insert(updateFile).ConfigureAwait(false);
+                releaseHash = BitConverter.ToString(await sha.ComputeHashAsync(stream)).Replace("-", "").ToLowerInvariant();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Could not compute hash for release asset '{0}'", releaseAsset.Name);
             }
             finally
             {
@@ -194,6 +189,21 @@ namespace ServarrAPI.Release.Github
                     File.Delete(releaseZip);
                 }
             }
+
+            // Add to database.
+            var updateFile = new UpdateFileEntity
+            {
+                UpdateId = updateId,
+                OperatingSystem = operatingSystem.Value,
+                Architecture = arch,
+                Runtime = runtime,
+                Filename = releaseAsset.Name,
+                Url = releaseAsset.BrowserDownloadUrl,
+                Hash = releaseHash,
+                Installer = installer
+            };
+
+            await _updateFileService.Insert(updateFile).ConfigureAwait(false);
         }
     }
 }

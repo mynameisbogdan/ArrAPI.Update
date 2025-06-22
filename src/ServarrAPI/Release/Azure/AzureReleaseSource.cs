@@ -185,7 +185,8 @@ namespace ServarrAPI.Release.Azure
 
                 // Parse changes
                 var changes = await changesTask.ConfigureAwait(false);
-                var features = changes.Select(x => ReleaseFeaturesGroup.Match(x.Message));
+
+                var features = changes.Select(x => ReleaseFeaturesGroup.Match(x.Message)).ToList();
                 if (features.Any(x => x.Success))
                 {
                     updateEntity.New.Clear();
@@ -196,7 +197,7 @@ namespace ServarrAPI.Release.Azure
                     }
                 }
 
-                var fixes = changes.Select(x => ReleaseFixesGroup.Match(x.Message));
+                var fixes = changes.Select(x => ReleaseFixesGroup.Match(x.Message)).ToList();
                 if (fixes.Any(x => x.Success))
                 {
                     updateEntity.Fixed.Clear();
@@ -249,6 +250,8 @@ namespace ServarrAPI.Release.Azure
             var releaseFileName = Path.GetFileName(file.Path);
             var releaseZip = Path.Combine(_config.DataDirectory, branch.ToLowerInvariant(), releaseFileName);
 
+            string releaseHash = null;
+
             try
             {
                 if (!File.Exists(releaseZip))
@@ -260,27 +263,14 @@ namespace ServarrAPI.Release.Azure
                     await artifactStream.CopyToAsync(fileStream).ConfigureAwait(false);
                 }
 
-                string releaseHash;
-                await using (var stream = File.OpenRead(releaseZip))
-                using (var sha = SHA256.Create())
-                {
-                    releaseHash = BitConverter.ToString(await sha.ComputeHashAsync(stream)).Replace("-", "").ToLowerInvariant();
-                }
+                await using var stream = File.OpenRead(releaseZip);
+                using var sha = SHA256.Create();
 
-                // Add to database.
-                var updateFile = new UpdateFileEntity
-                {
-                    UpdateId = updateId,
-                    OperatingSystem = operatingSystem.Value,
-                    Architecture = arch,
-                    Runtime = runtime,
-                    Filename = releaseFileName,
-                    Url = file.Url,
-                    Hash = releaseHash,
-                    Installer = installer
-                };
-
-                await _updateFileService.Insert(updateFile).ConfigureAwait(false);
+                releaseHash = BitConverter.ToString(await sha.ComputeHashAsync(stream)).Replace("-", "").ToLowerInvariant();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Could not compute hash for release asset '{0}'", releaseFileName);
             }
             finally
             {
@@ -289,6 +279,21 @@ namespace ServarrAPI.Release.Azure
                     File.Delete(releaseZip);
                 }
             }
+
+            // Add to database.
+            var updateFile = new UpdateFileEntity
+            {
+                UpdateId = updateId,
+                OperatingSystem = operatingSystem.Value,
+                Architecture = arch,
+                Runtime = runtime,
+                Filename = releaseFileName,
+                Url = file.Url,
+                Hash = releaseHash,
+                Installer = installer
+            };
+
+            await _updateFileService.Insert(updateFile).ConfigureAwait(false);
         }
     }
 }
