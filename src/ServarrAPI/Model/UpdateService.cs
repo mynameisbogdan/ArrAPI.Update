@@ -1,24 +1,27 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace ServarrAPI.Model
 {
     public interface IUpdateService
     {
+        Task<IEnumerable<UpdateEntity>> All();
         Task<UpdateEntity> Insert(UpdateEntity entity);
         Task<UpdateEntity> Find(string version, string branch);
     }
 
     public class UpdateService : IUpdateService
     {
-        private readonly ILogger _logger;
         private readonly IUpdateRepository _repo;
 
-        public UpdateService(IUpdateRepository repo,
-                             ILogger<IUpdateService> logger)
+        public UpdateService(IUpdateRepository repo)
         {
             _repo = repo;
-            _logger = logger;
+        }
+
+        public Task<IEnumerable<UpdateEntity>> All()
+        {
+            return _repo.All();
         }
 
         public Task<UpdateEntity> Insert(UpdateEntity entity)

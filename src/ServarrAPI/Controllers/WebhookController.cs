@@ -46,7 +46,7 @@ namespace ServarrAPI.Controllers
                 _ => null
             };
 
-            if (type == null)
+            if (type is null)
             {
                 return $"Unknown source {source}";
             }

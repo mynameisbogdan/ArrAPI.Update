@@ -45,7 +45,7 @@ namespace ServarrAPI.Controllers.Update
                 var update = updateFile.Update.Value;
                 UpdateChanges updateChanges = null;
 
-                if (update.New.Count != 0 || update.Fixed.Count != 0)
+                if (update.New.Count > 0 || update.Fixed.Count > 0)
                 {
                     updateChanges = new UpdateChanges
                     {
@@ -60,9 +60,9 @@ namespace ServarrAPI.Controllers.Update
                     ReleaseDate = update.ReleaseDate,
                     Filename = updateFile.Filename,
                     Url = updateFile.Url,
-                    Changes = updateChanges,
+                    Branch = update.Branch.ToLowerInvariant(),
                     Hash = updateFile.Hash,
-                    Branch = update.Branch.ToString().ToLower()
+                    Changes = updateChanges,
                 });
             }
 
@@ -148,7 +148,7 @@ namespace ServarrAPI.Controllers.Update
             // Get the update changes
             UpdateChanges updateChanges = null;
 
-            if (update.New.Count != 0 || update.Fixed.Count != 0)
+            if (update.New.Count > 0 || update.Fixed.Count > 0)
             {
                 updateChanges = new UpdateChanges
                 {
@@ -168,8 +168,8 @@ namespace ServarrAPI.Controllers.Update
                     Url = updateFile.Url,
                     Changes = updateChanges,
                     Hash = updateFile.Hash,
-                    Branch = update.Branch.ToString().ToLower(),
-                    Runtime = updateFile.Runtime.ToString().ToLower()
+                    Branch = update.Branch.ToLowerInvariant(),
+                    Runtime = updateFile.Runtime.ToString().ToLowerInvariant()
                 }
             };
         }

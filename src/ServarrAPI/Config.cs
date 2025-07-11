@@ -16,6 +16,7 @@ namespace ServarrAPI
         public string ApiKey { get; set; }
         public string AzureOrg { get; set; }
         public int AzurePipelineId { get; set; }
+        public string GithubApiToken { get; set; }
         public string GithubOrg { get; set; }
         public string Project { get; set; }
         public bool LogSql { get; set; }
