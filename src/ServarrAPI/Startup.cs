@@ -15,6 +15,7 @@ using ServarrAPI.Model;
 using ServarrAPI.Release;
 using ServarrAPI.Release.Azure;
 using ServarrAPI.Release.Github;
+using ServarrAPI.Serializer;
 using ServarrAPI.TaskQueue;
 
 namespace ServarrAPI
@@ -79,7 +80,13 @@ namespace ServarrAPI
 
             services
                 .AddControllers()
-                .AddJsonOptions(options => options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull);
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+                    options.JsonSerializerOptions.WriteIndented = true;
+
+                    options.JsonSerializerOptions.Converters.Add(new STJUtcConverter());
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
