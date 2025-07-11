@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Security.Cryptography;
+using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using GraphQL;
+using GraphQL.Client.Http;
+using GraphQL.Client.Serializer.SystemTextJson;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Octokit;
 using ServarrAPI.Extensions;
 using ServarrAPI.Model;
 using ServarrAPI.Util;
@@ -17,17 +17,15 @@ namespace ServarrAPI.Release.Github
 {
     public class GithubReleaseSource : ReleaseSourceBase
     {
-        private static readonly Regex ReleaseFeaturesGroup = new Regex(@"\*\s+[0-9a-f]{40}\s+(?:New:|\(?feat\)?.*:)\s*(?<text>.*?)\r*$", RegexOptions.Compiled | RegexOptions.Multiline);
-
-        private static readonly Regex ReleaseFixesGroup = new Regex(@"\*\s+[0-9a-f]{40}\s+(?:Fix(?:ed)?:|\(?fix\)?.*:)\s*(?<text>.*?)\r*$", RegexOptions.Compiled | RegexOptions.Multiline);
+        private static readonly Regex ReleaseFeaturesGroup = new (@"\*\s+[0-9a-f]{40}\s+(?:New:|\(?feat\)?.*:)\s*(?<text>.*?)\r*$", RegexOptions.Compiled | RegexOptions.Multiline);
+        private static readonly Regex ReleaseFixesGroup = new (@"\*\s+[0-9a-f]{40}\s+(?:Fix(?:ed)?:|\(?fix\)?.*:)\s*(?<text>.*?)\r*$", RegexOptions.Compiled | RegexOptions.Multiline);
 
         private readonly Config _config;
         private readonly IUpdateService _updateService;
         private readonly IUpdateFileService _updateFileService;
         private readonly ILogger<GithubReleaseSource> _logger;
 
-        private readonly GitHubClient _gitHubClient;
-        private readonly HttpClient _httpClient;
+        private readonly GraphQLHttpClient _graphqlClient;
 
         public GithubReleaseSource(IUpdateService updateService,
                                    IUpdateFileService updateFileService,
@@ -39,8 +37,14 @@ namespace ServarrAPI.Release.Github
             _logger = logger;
             _config = config.Value;
 
-            _gitHubClient = new GitHubClient(new ProductHeaderValue("ServarrAPI"));
-            _httpClient = new HttpClient();
+            if (string.IsNullOrWhiteSpace(_config.GithubApiToken))
+            {
+                throw new Exception("Github API token not set.");
+            }
+
+            _graphqlClient = new GraphQLHttpClient("https://api.github.com/graphql", new SystemTextJsonSerializer());
+            _graphqlClient.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _config.GithubApiToken);
+            _graphqlClient.HttpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("ServarrUpdateAPI", "1.0.0"));
         }
 
         protected override async Task<List<string>> DoFetchReleasesAsync()
@@ -48,35 +52,67 @@ namespace ServarrAPI.Release.Github
             var updated = new HashSet<string>();
 
             var githubOrg = _config.GithubOrg ?? _config.Project;
-            var releases = await _gitHubClient.Repository.Release.GetAll(
-                githubOrg,
-                _config.Project,
-                new ApiOptions
-                {
-                    PageSize = 100,
-                    PageCount = 1
-                })
-                .ConfigureAwait(false);
 
-            var validReleases = releases.ToArray()
-                .Where(r => r.PublishedAt.HasValue && r.TagName.StartsWith("v") && VersionUtil.IsValid(r.TagName.Substring(1)))
-                .Take(3)
-                .Reverse()
-                .ToArray();
-
-            foreach (var release in validReleases)
+            var fetchReleasesRequest = new GraphQLRequest
             {
-                var version = release.TagName.Substring(1);
+                Query = """
+                query ($owner: String!, $repository: String!) {
+                  repository(owner: $owner, name: $repository) {
+                    releases(first: 100, orderBy: { field: CREATED_AT, direction: DESC }) {
+                      nodes {
+                        tagName
+                        description
+                        isDraft
+                        isPrerelease
+                        createdAt
+                        publishedAt
+                        releaseAssets(first: 100) {
+                          nodes {
+                            name
+                            downloadUrl
+                            digest
+                          }
+                          totalCount
+                        }
+                      }
+                    }
+                  }
+                }
+                """,
+                Variables = new
+                {
+                    owner = githubOrg,
+                    repository = _config.Project
+                }
+            };
 
-                // determine the branch
-                var branch = release.Assets.Any(a => a.Name.StartsWith($"{_config.Project}.master")) ? "master" : "develop";
+            var graphqlResponse = await _graphqlClient.SendQueryAsync<GithubRepositoryResponse>(fetchReleasesRequest);
+
+            var releases = graphqlResponse.Data.Repository.Releases.Nodes
+                .Where(release => !release.IsDraft && release.PublishedAt.HasValue)
+                .OrderByDescending(release => release.PublishedAt.Value)
+                .Where(release => release.TagName.StartsWith('v') && VersionUtil.IsValid(release.TagName[1..]))
+                .Take(5)
+                .Reverse();
+
+            foreach (var release in releases)
+            {
+                var version = release.TagName[1..];
+
+                if (release.Assets.TotalCount is > 100)
+                {
+                    throw new TooManyReleaseAssetsException($"Too many release assets for release: {release.TagName}");
+                }
+
+                // Determine the branch
+                var branch = release.Assets.Nodes.Any(a => a.Name.StartsWith($"{_config.Project}.master")) ? "master" : "develop";
 
                 if (await ProcessRelease(release, branch, version))
                 {
                     updated.Add(branch);
                 }
 
-                // releases on master should also appear on develop
+                // Releases on master should also appear on develop
                 if (branch == "master" && await ProcessRelease(release, "develop", version))
                 {
                     updated.Add("develop");
@@ -86,16 +122,14 @@ namespace ServarrAPI.Release.Github
             return updated.ToList();
         }
 
-        private async Task<bool> ProcessRelease(Octokit.Release release, string branch, string version)
+        private async Task<bool> ProcessRelease(GithubRelease release, string branch, string version)
         {
-            var isNewRelease = false;
-
             // Get an updateEntity
             var updateEntity = await _updateService.Find(version, branch).ConfigureAwait(false);
 
-            if (updateEntity != null)
+            if (updateEntity is not null)
             {
-                return isNewRelease;
+                return false;
             }
 
             var parsedVersion = Version.Parse(version);
@@ -105,102 +139,73 @@ namespace ServarrAPI.Release.Github
             {
                 Version = version,
                 IntVersion = parsedVersion.ToIntVersion(),
-                ReleaseDate = release.PublishedAt.Value.UtcDateTime,
+                ReleaseDate = release.PublishedAt!.Value.UtcDateTime,
                 Branch = branch
             };
 
-            // Set new release to true.
-            isNewRelease = true;
-
             // Parse changes
-            var releaseBody = release.Body;
+            var releaseBody = release.Description;
 
-            var features = ReleaseFeaturesGroup.Matches(releaseBody);
-            if (features.Any())
+            var features = ReleaseFeaturesGroup.Matches(releaseBody).ToList();
+
+            if (features.Count > 0)
             {
                 updateEntity.New.Clear();
 
-                foreach (Match match in features)
+                foreach (var match in features)
                 {
-                    updateEntity.New.Add(match.Groups["text"].Value);
+                    updateEntity.New.Add(match.Groups["text"].Value.Trim());
                 }
             }
 
-            var fixes = ReleaseFixesGroup.Matches(releaseBody);
-            if (fixes.Any())
+            var fixes = ReleaseFixesGroup.Matches(releaseBody).ToList();
+
+            if (fixes.Count > 0)
             {
                 updateEntity.Fixed.Clear();
 
-                foreach (Match match in fixes)
+                foreach (var match in fixes)
                 {
-                    updateEntity.Fixed.Add(match.Groups["text"].Value);
+                    updateEntity.Fixed.Add(match.Groups["text"].Value.Trim());
                 }
             }
 
             await _updateService.Insert(updateEntity).ConfigureAwait(false);
 
-            // Process release files.
-            await Task.WhenAll(release.Assets.Select(x => ProcessAsset(x, branch, updateEntity.Id)));
+            // Process release files
+            foreach (var asset in release.Assets.Nodes)
+            {
+                await ProcessAsset(asset, updateEntity.Id);
+            }
 
-            return isNewRelease;
+            return true;
         }
 
-        private async Task ProcessAsset(ReleaseAsset releaseAsset, string branch, int updateId)
+        private async Task ProcessAsset(GithubReleaseAsset releaseAsset, int updateId)
         {
             var operatingSystem = Parser.ParseOS(releaseAsset.Name);
+
             if (!operatingSystem.HasValue)
             {
                 return;
             }
 
             var runtime = Parser.ParseRuntime(releaseAsset.Name);
-            var arch = Parser.ParseArchitecture(releaseAsset.Name);
-            var installer = Parser.ParseInstaller(releaseAsset.Name);
+            var architecture = Parser.ParseArchitecture(releaseAsset.Name);
+            var isInstaller = Parser.ParseInstaller(releaseAsset.Name);
 
-            // Calculate the hash of the zip file.
-            var releaseZip = Path.Combine(_config.DataDirectory, branch.ToLowerInvariant(), releaseAsset.Name);
+            var releaseHash = releaseAsset.Digest?.Split(':').Skip(1).FirstOrDefault();
 
-            string releaseHash = null;
-
-            try
-            {
-                if (!File.Exists(releaseZip))
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(releaseZip));
-
-                    await using var fileStream = File.OpenWrite(releaseZip);
-                    await using var artifactStream = await _httpClient.GetStreamAsync(releaseAsset.BrowserDownloadUrl);
-                    await artifactStream.CopyToAsync(fileStream);
-                }
-
-                await using var stream = File.OpenRead(releaseZip);
-                using var sha = SHA256.Create();
-
-                releaseHash = BitConverter.ToString(await sha.ComputeHashAsync(stream)).Replace("-", "").ToLowerInvariant();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Could not compute hash for release asset '{0}'", releaseAsset.Name);
-            }
-            finally
-            {
-                if (File.Exists(releaseZip))
-                {
-                    File.Delete(releaseZip);
-                }
-            }
-
-            // Add to database.
             var updateFile = new UpdateFileEntity
             {
                 UpdateId = updateId,
                 OperatingSystem = operatingSystem.Value,
-                Architecture = arch,
+                Architecture = architecture,
                 Runtime = runtime,
                 Filename = releaseAsset.Name,
-                Url = releaseAsset.BrowserDownloadUrl,
+                Url = releaseAsset.DownloadUrl,
                 Hash = releaseHash,
-                Installer = installer
+                Installer = isInstaller
             };
 
             await _updateFileService.Insert(updateFile).ConfigureAwait(false);
