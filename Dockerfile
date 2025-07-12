@@ -16,7 +16,7 @@ RUN dotnet publish -c Release \
     src/*.sln
 
 # Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0.17-alpine3.22
+FROM mcr.microsoft.com/dotnet/aspnet:8.0.18-alpine3.22
 EXPOSE 5000
 WORKDIR /app
 COPY --from=build /source/build/. ./
