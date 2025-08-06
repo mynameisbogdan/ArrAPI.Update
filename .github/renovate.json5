@@ -1,0 +1,91 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
+    ':semanticCommits'
+  ],
+  dependencyDashboardTitle: 'Renovate Dashboard 🤖',
+  enabledManagers: [
+    'dockerfile',
+    'github-actions'
+  ],
+  schedule: [
+    '* * * * 0,6'
+  ],
+  suppressNotifications: [
+    'prEditedNotification',
+    'prIgnoreNotification'
+  ],
+  packageRules: [
+    {
+      description: 'GitHub Actions Group',
+      groupName: 'GitHub Actions',
+      matchManagers: ['github-actions'],
+      group: {
+        commitMessageTopic: '{{{groupName}}} group',
+      },
+    },
+    {
+      matchUpdateTypes: ['major'],
+      semanticCommitType: 'feat',
+      commitMessagePrefix: '{{semanticCommitType}}({{semanticCommitScope}})!:',
+      commitMessageExtra: '( {{currentVersion}} → {{newVersion}} )',
+    },
+    {
+      matchUpdateTypes: ['minor'],
+      semanticCommitType: 'feat',
+      commitMessageExtra: '( {{currentVersion}} → {{newVersion}} )',
+    },
+    {
+      matchUpdateTypes: ['patch'],
+      semanticCommitType: 'fix',
+      commitMessageExtra: '( {{currentVersion}} → {{newVersion}} )',
+    },
+    {
+      matchUpdateTypes: ['digest'],
+      semanticCommitType: 'chore',
+      commitMessageExtra: '( {{currentDigestShort}} → {{newDigestShort}} )',
+    },
+    {
+      matchDatasources: ['docker'],
+      semanticCommitScope: 'container',
+      commitMessageTopic: 'image {{depName}}',
+    },
+    {
+      matchManagers: ['github-actions'],
+      semanticCommitType: 'ci',
+      semanticCommitScope: 'github-action',
+      commitMessageTopic: 'action {{depName}}',
+    },
+    {
+      matchUpdateTypes: ['major'],
+      labels: ['type/major'],
+    },
+    {
+      matchUpdateTypes: ['minor'],
+      labels: ['type/minor'],
+    },
+    {
+      matchUpdateTypes: ['patch'],
+      labels: ['type/patch'],
+    },
+    {
+      matchDatasources: ['docker'],
+      addLabels: ['renovate/container'],
+    },
+    {
+      matchManagers: ['github-actions'],
+      addLabels: ['renovate/github-action'],
+    },
+    {
+      enabled: false,
+      matchDatasources: [
+        'docker'
+      ],
+      matchPackageNames: [
+        'mcr.microsoft.com/dotnet/**'
+      ],
+      matchUpdateTypes: ['major']
+    }
+  ]
+}
