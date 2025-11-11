@@ -4,7 +4,7 @@
 
 ## Development
 
-If you want to work on **ArrAPI.Update**, make sure you have [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) installed and [Visual Studio](https://www.visualstudio.com/vs).
+If you want to work on **ArrAPI.Update**, make sure you have [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) installed and [Visual Studio](https://www.visualstudio.com/vs).
 
 ## Using Docker
 
