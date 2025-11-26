@@ -1,93 +1,108 @@
 {
-  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
   extends: [
-    'config:recommended',
-    'helpers:pinGitHubActionDigests',
-    ':disableRateLimiting',
-    ':semanticCommits'
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    ":disableRateLimiting",
+    ":semanticCommits"
   ],
-  dependencyDashboardTitle: 'Renovate Dashboard 🤖',
+  dependencyDashboardTitle: "Renovate Dashboard 🤖",
   enabledManagers: [
-    'dockerfile',
-    'github-actions'
+    "dockerfile",
+    "github-actions"
   ],
   schedule: [
-    '* * * * 0,6'
+    "* * * * 0,6"
   ],
   suppressNotifications: [
-    'prEditedNotification',
-    'prIgnoreNotification'
+    "prEditedNotification",
+    "prIgnoreNotification"
   ],
   packageRules: [
     {
-      description: 'GitHub Actions Group',
-      groupName: 'GitHub Actions',
-      matchManagers: ['github-actions'],
+      description: "GitHub Actions Group",
+      groupName: "github-actions",
+      matchManagers: ["github-actions"],
+      matchPackageNames: [
+        "/^actions\//",
+        "/^github\//",
+        "/^docker\//",
+      ],
       group: {
-        commitMessageTopic: '{{{groupName}}} group',
+        commitMessageTopic: "{{{groupName}}} group",
       },
     },
     {
-      matchUpdateTypes: ['major'],
-      semanticCommitType: 'feat',
-      commitMessagePrefix: '{{semanticCommitType}}({{semanticCommitScope}})!:',
-      commitMessageExtra: '( {{currentVersion}} ➔ {{newVersion}} )',
+      description: "Auto-merge trusted GitHub Actions",
+      matchManagers: ["github-actions"],
+      matchPackageNames: [
+        "/^actions\//",
+      ],
+      automerge: true,
+      automergeType: "pr",
+      matchUpdateTypes: ["minor", "patch", "digest"],
+      minimumReleaseAge: "1 minute",
+      ignoreTests: false,
     },
     {
-      matchUpdateTypes: ['minor'],
-      semanticCommitType: 'feat',
-      commitMessageExtra: '( {{currentVersion}} ➔ {{newVersion}} )',
+      matchUpdateTypes: ["major"],
+      semanticCommitType: "feat",
+      commitMessagePrefix: "{{semanticCommitType}}({{semanticCommitScope}})!:",
+      commitMessageExtra: "( {{currentVersion}} ➔ {{newVersion}} )",
     },
     {
-      matchUpdateTypes: ['patch'],
-      semanticCommitType: 'fix',
-      commitMessageExtra: '( {{currentVersion}} ➔ {{newVersion}} )',
+      matchUpdateTypes: ["minor"],
+      semanticCommitType: "feat",
+      commitMessageExtra: "( {{currentVersion}} ➔ {{newVersion}} )",
     },
     {
-      matchUpdateTypes: ['digest'],
-      semanticCommitType: 'chore',
-      commitMessageExtra: '( {{currentDigestShort}} ➔ {{newDigestShort}} )',
+      matchUpdateTypes: ["patch"],
+      semanticCommitType: "fix",
+      commitMessageExtra: "( {{currentVersion}} ➔ {{newVersion}} )",
     },
     {
-      matchDatasources: ['docker'],
-      semanticCommitScope: 'container',
-      commitMessageTopic: 'image {{depName}}',
+      matchUpdateTypes: ["digest"],
+      semanticCommitType: "chore",
+      commitMessageExtra: "( {{currentDigestShort}} ➔ {{newDigestShort}} )",
     },
     {
-      matchManagers: ['github-actions'],
-      semanticCommitType: 'ci',
-      semanticCommitScope: 'github-action',
-      commitMessageTopic: 'action {{depName}}',
+      matchDatasources: ["docker"],
+      semanticCommitScope: "container",
+      commitMessageTopic: "image {{depName}}",
     },
     {
-      matchUpdateTypes: ['major'],
-      labels: ['type/major'],
+      matchManagers: ["github-actions"],
+      semanticCommitType: "ci",
+      semanticCommitScope: "github-action",
+      commitMessageTopic: "action {{depName}}",
     },
     {
-      matchUpdateTypes: ['minor'],
-      labels: ['type/minor'],
+      matchUpdateTypes: ["major"],
+      labels: ["type/major"],
     },
     {
-      matchUpdateTypes: ['patch'],
-      labels: ['type/patch'],
+      matchUpdateTypes: ["minor"],
+      labels: ["type/minor"],
     },
     {
-      matchDatasources: ['docker'],
-      addLabels: ['renovate/container'],
+      matchUpdateTypes: ["patch"],
+      labels: ["type/patch"],
     },
     {
-      matchManagers: ['github-actions'],
-      addLabels: ['renovate/github-action'],
+      matchDatasources: ["docker"],
+      addLabels: ["renovate/container"],
+    },
+    {
+      matchManagers: ["github-actions"],
+      addLabels: ["renovate/github-action"],
     },
     {
       enabled: false,
-      matchDatasources: [
-        'docker'
-      ],
+      matchDatasources: ["docker"],
       matchPackageNames: [
-        'mcr.microsoft.com/dotnet/**'
+        "mcr.microsoft.com/dotnet/**",
       ],
-      matchUpdateTypes: ['major']
+      matchUpdateTypes: ["major"],
     }
   ]
 }
