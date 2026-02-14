@@ -1,6 +1,6 @@
 ﻿# syntax=docker/dockerfile:1
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0.310-alpine3.22 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0.311-alpine3.23 AS build
 
 ARG TARGETARCH
 ARG VERSION=0.0.0
@@ -19,7 +19,7 @@ RUN dotnet publish -c Release \
     src/*.sln
 
 # Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:9.0.12-alpine3.22
+FROM mcr.microsoft.com/dotnet/aspnet:9.0.13-alpine3.23
 EXPOSE 5000
 WORKDIR /app
 COPY --from=build /source/build/. ./
