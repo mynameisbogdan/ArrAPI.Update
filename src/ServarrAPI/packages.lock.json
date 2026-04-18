@@ -85,11 +85,11 @@
       },
       "Npgsql": {
         "type": "Direct",
-        "requested": "[5.0.18, )",
-        "resolved": "5.0.18",
-        "contentHash": "1u4iCPKL9wtPeSUzChIbgq/BlOhvf44o7xASacdpMY7z0PbqACKpNOF0fjEn9jDV/AJl/HtPY6zk5qasQ1URhw==",
+        "requested": "[10.0.2, )",
+        "resolved": "10.0.2",
+        "contentHash": "q5RfBI+wywJSFUNDE1L4ZbHEHCFTblo8Uf6A6oe4feOUFYiUQXyAf9GBh5qEZpvJaHiEbpBPkQumjEhXCJxdrg==",
         "dependencies": {
-          "System.Runtime.CompilerServices.Unsafe": "4.6.0"
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.0"
         }
       },
       "Octokit": {
@@ -1121,11 +1121,6 @@
           "Microsoft.NETCore.Platforms": "1.1.0",
           "Microsoft.NETCore.Targets": "1.1.0"
         }
-      },
-      "System.Runtime.CompilerServices.Unsafe": {
-        "type": "Transitive",
-        "resolved": "4.6.0",
-        "contentHash": "HxozeSlipUK7dAroTYwIcGwKDeOVpQnJlpVaOkBz7CM4TsE5b/tKlQBZecTjh6FzcSbxndYaxxpsBMz+wMJeyw=="
       },
       "System.Runtime.Extensions": {
         "type": "Transitive",
