@@ -47,7 +47,7 @@ jobs:
         shell: bash
         run: |
           echo "version=${{ env.APP_VERSION }}.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
-          echo "branch=${BRANCH_NAME//\//-}" >> "$GITHUB_OUTPUT"
+          echo "branch=${BRANCH_NAME//[\/.]/-}" >> "$GITHUB_OUTPUT"
 
   build:
     needs: prepare
