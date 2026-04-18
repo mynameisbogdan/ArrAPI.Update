@@ -32,6 +32,17 @@
       },
     },
     {
+      description: "FluentMigrator Group",
+      groupName: "fluentmigrator",
+      matchManagers: ["nuget"],
+      matchPackageNames: [
+        "FluentMigrator.*",
+      ],
+      group: {
+        commitMessageTopic: "{{{groupName}}} group",
+      },
+    },
+    {
       description: "Auto-merge trusted GitHub Actions",
       matchManagers: ["github-actions"],
       matchPackageNames: [
