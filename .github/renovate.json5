@@ -9,7 +9,8 @@
   dependencyDashboardTitle: "Renovate Dashboard 🤖",
   enabledManagers: [
     "dockerfile",
-    "github-actions"
+    "github-actions",
+    "nuget",
   ],
   schedule: [
     "* * * * 0,6"
@@ -25,8 +26,6 @@
       matchManagers: ["github-actions"],
       matchPackageNames: [
         "/^actions\//",
-        "/^github\//",
-        "/^docker\//",
       ],
       group: {
         commitMessageTopic: "{{{groupName}}} group",
@@ -89,6 +88,10 @@
       labels: ["type/patch"],
     },
     {
+      matchUpdateTypes: ["digest"],
+      labels: ["type/digest"],
+    },
+    {
       matchDatasources: ["docker"],
       addLabels: ["renovate/container"],
     },
@@ -97,12 +100,10 @@
       addLabels: ["renovate/github-action"],
     },
     {
-      enabled: false,
-      matchDatasources: ["docker"],
-      matchPackageNames: [
-        "mcr.microsoft.com/dotnet/**",
-      ],
+      extends: ["monorepo:dotnet"],
+      description: ["Disable major version updates for .NET"],
       matchUpdateTypes: ["major"],
-    }
+      enabled: false,
+    },
   ]
 }
