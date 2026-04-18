@@ -15,8 +15,8 @@
     <PackageReference Include="Sentry.AspNetCore" Version="3.41.4" />
     <PackageReference Include="Sentry.Serilog" Version="3.41.4" />
     <PackageReference Include="Dapper" Version="2.1.72" />
-    <PackageReference Include="FluentMigrator.Runner.Core" Version="6.2.0" />
-    <PackageReference Include="FluentMigrator.Runner.Postgres" Version="6.2.0" />
+    <PackageReference Include="FluentMigrator.Runner.Core" Version="8.0.1" />
+    <PackageReference Include="FluentMigrator.Runner.Postgres" Version="8.0.1" />
     <PackageReference Include="Npgsql" Version="5.0.18" />
     <PackageReference Include="Octokit" Version="14.0.0" />
     <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="16.205.3" />
