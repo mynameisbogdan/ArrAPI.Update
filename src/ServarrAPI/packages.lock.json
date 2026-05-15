@@ -125,11 +125,11 @@
       },
       "System.Configuration.ConfigurationManager": {
         "type": "Direct",
-        "requested": "[9.0.15, )",
-        "resolved": "9.0.15",
-        "contentHash": "KaQ/0Hoi8bfStyzpITKW9jHY8qkVwii/m26foTTeXMx9UGwhtQMWIwBmLDUFHTFmP39x0mqnAuvZi+yyem/N1w==",
+        "requested": "[9.0.16, )",
+        "resolved": "9.0.16",
+        "contentHash": "SuXw1QjsQlkbfhjYDzpd+0ZqzYfmBQGaSpvcSVhbfGHvNqQX9FpGAXOQO2I/IMPQzIf6iimlZq5wqzWk9+l84g==",
         "dependencies": {
-          "System.Security.Cryptography.ProtectedData": "9.0.15"
+          "System.Security.Cryptography.ProtectedData": "9.0.16"
         }
       },
       "Azure.Core": {
@@ -500,8 +500,8 @@
       },
       "System.Security.Cryptography.ProtectedData": {
         "type": "Transitive",
-        "resolved": "9.0.15",
-        "contentHash": "sObjWXydF/osVWObYPmqN1PGxx+XYlPbEqPDjUzYGQbanrdd4x9pIPnUwi7d7RuKEsZ5i814oVli9s3bMqlRog=="
+        "resolved": "9.0.16",
+        "contentHash": "G+w5yDgpMowQx1+srOEYJKfPpwN5QgiXC3NW6JSh6+anb8VdpPeg8BJ7IjMvUVHdSYiPux02KqVQkrbuJEu2Zw=="
       },
       "System.ServiceModel.Primitives": {
         "type": "Transitive",
