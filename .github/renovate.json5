@@ -6,7 +6,7 @@
     ":disableRateLimiting",
     ":semanticCommits"
   ],
-  dependencyDashboardTitle: "Renovate Dashboard 🤖",
+  dependencyDashboardTitle: "Renovate Dashboard",
   enabledManagers: [
     "dockerfile",
     "github-actions",
@@ -58,22 +58,22 @@
       matchUpdateTypes: ["major"],
       semanticCommitType: "feat",
       commitMessagePrefix: "{{semanticCommitType}}({{semanticCommitScope}})!:",
-      commitMessageExtra: "( {{currentVersion}} ➔ {{newVersion}} )",
+      commitMessageExtra: "({{currentVersion}} ➔ {{newVersion}})",
     },
     {
       matchUpdateTypes: ["minor"],
       semanticCommitType: "feat",
-      commitMessageExtra: "( {{currentVersion}} ➔ {{newVersion}} )",
+      commitMessageExtra: "({{currentVersion}} ➔ {{newVersion}})",
     },
     {
       matchUpdateTypes: ["patch"],
       semanticCommitType: "fix",
-      commitMessageExtra: "( {{currentVersion}} ➔ {{newVersion}} )",
+      commitMessageExtra: "({{currentVersion}} ➔ {{newVersion}})",
     },
     {
       matchUpdateTypes: ["digest"],
-      semanticCommitType: "chore",
-      commitMessageExtra: "( {{currentDigestShort}} ➔ {{newDigestShort}} )",
+      semanticCommitType: "fix",
+      commitMessageExtra: "({{currentDigestShort}} ➔ {{newDigestShort}})",
     },
     {
       matchDatasources: ["docker"],
@@ -87,20 +87,26 @@
       commitMessageTopic: "action {{depName}}",
     },
     {
+      matchManagers: ["nuget"],
+      semanticCommitType: "chore",
+      semanticCommitScope: "nuget",
+      commitMessageTopic: "nuget {{depName}}",
+    },
+    {
       matchUpdateTypes: ["major"],
-      labels: ["type/major"],
+      addLabels: ["type/major"],
     },
     {
       matchUpdateTypes: ["minor"],
-      labels: ["type/minor"],
+      addLabels: ["type/minor"],
     },
     {
       matchUpdateTypes: ["patch"],
-      labels: ["type/patch"],
+      addLabels: ["type/patch"],
     },
     {
       matchUpdateTypes: ["digest"],
-      labels: ["type/digest"],
+      addLabels: ["type/digest"],
     },
     {
       matchDatasources: ["docker"],
@@ -109,6 +115,10 @@
     {
       matchManagers: ["github-actions"],
       addLabels: ["renovate/github-action"],
+    },
+    {
+      matchDatasources: ["nuget"],
+      addLabels: ["renovate/nuget"],
     },
     {
       extends: ["monorepo:dotnet"],
