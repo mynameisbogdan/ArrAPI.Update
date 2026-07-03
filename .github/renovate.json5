@@ -32,6 +32,17 @@
       },
     },
     {
+      description: "Docker Actions Group",
+      groupName: "docker-actions",
+      matchManagers: ["github-actions"],
+      matchPackageNames: [
+        "/^docker\//",
+      ],
+      group: {
+        commitMessageTopic: "{{{groupName}}} group",
+      },
+    },
+    {
       description: "FluentMigrator Group",
       groupName: "fluentmigrator",
       matchManagers: ["nuget"],
