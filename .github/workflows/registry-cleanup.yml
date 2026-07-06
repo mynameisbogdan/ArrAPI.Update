@@ -1,0 +1,34 @@
+name: Registry Cleanup
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 0 * * 1"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/registry-cleanup.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  packages: write
+
+jobs:
+  clean:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete old images
+        uses: snok/container-retention-policy@d3bdcf5ce9b05f685154e4a16c39233b245e3d53 # v3.1.0
+        with:
+          account: user
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image-names: arrapi-update
+          image-tags: "!latest !main"
+          cut-off: 1w
+          keep-n-most-recent: 5
+          timestamp-to-use: updated_at
