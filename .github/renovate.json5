@@ -132,10 +132,10 @@
       addLabels: ["renovate/nuget"],
     },
     {
+      description: "Manually approve major version updates for .NET",
       extends: ["monorepo:dotnet"],
-      description: ["Disable major version updates for .NET"],
       matchUpdateTypes: ["major"],
-      enabled: false,
+      dependencyDashboardApproval: true,
     },
   ]
 }
