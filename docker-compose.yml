@@ -4,7 +4,7 @@ volumes:
 
 services:
   db:
-    image: postgres:16-alpine
+    image: mirror.gcr.io/postgres:16-alpine
     restart: unless-stopped
     ports:
       - "5438:5432"
