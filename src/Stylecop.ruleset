@@ -30,6 +30,7 @@
     <Rule Id="SA1306" Action="None" />
     <Rule Id="SA1309" Action="None" />
     <Rule Id="SA1310" Action="None" />
+    <Rule Id="SA1315" Action="Info" />
   </Rules>
   <Rules AnalyzerId="StyleCop.CSharp.MaintainabilityRules"
          RuleNamespace="StyleCop.CSharp.MaintainabilityRules">

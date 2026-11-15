@@ -19,7 +19,7 @@ namespace ServarrAPI.Cloudflare
 
     public class CloudflareProxy : ICloudflareProxy
     {
-        private static readonly JsonSerializerOptions JsonOptions = new ()
+        private static readonly JsonSerializerOptions JsonOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
