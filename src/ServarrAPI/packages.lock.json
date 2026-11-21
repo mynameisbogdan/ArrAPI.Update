@@ -85,20 +85,20 @@
       },
       "Sentry.AspNetCore": {
         "type": "Direct",
-        "requested": "[7.0.0, )",
-        "resolved": "7.0.0",
-        "contentHash": "EazVsMLxwpVVzMnh7iBzl61YO65zlC519Vg9Iof5CQZgk+QdA6+UedCjD6700BdV2nuFl7SrxiHGtLimXNid7A==",
+        "requested": "[7.0.1, )",
+        "resolved": "7.0.1",
+        "contentHash": "FxYSrr9HileJYWR0hWCX3rOdIBYwJpcngOT1oK+TcNenh5Z8m2Sp6kPMUxlminLhnnU4XlTP6RGKEmlfw3AS7Q==",
         "dependencies": {
-          "Sentry.Extensions.Logging": "7.0.0"
+          "Sentry.Extensions.Logging": "7.0.1"
         }
       },
       "Sentry.Serilog": {
         "type": "Direct",
-        "requested": "[7.0.0, )",
-        "resolved": "7.0.0",
-        "contentHash": "49v+qinSV0xbcplNgP50X7RqT6B8j5PTb8RhtXvJBp8tVqzLVVBj73XaVfS6vUMmOAjSSOS2XH7qLlruEpfDkA==",
+        "requested": "[7.0.1, )",
+        "resolved": "7.0.1",
+        "contentHash": "/Z2fbJCPTiweIEb+5dOkrklDZXZZsWj2xp6I+R+nCWylvYiUa1mVprFFPhpslpdYtn/gXVNU/1H1sRFVWS4Dmg==",
         "dependencies": {
-          "Sentry": "7.0.0",
+          "Sentry": "7.0.1",
           "Serilog": "2.10.0"
         }
       },
@@ -366,15 +366,15 @@
       },
       "Sentry": {
         "type": "Transitive",
-        "resolved": "7.0.0",
-        "contentHash": "aMf7k3poqjVO/Vw1DNxopP9HjCIlfNX3EgJ5pJ8jvwWTYkSXJpkQpERdKwxmQ+WdEkTtkQLdJC4xtsClG/Kk3g=="
+        "resolved": "7.0.1",
+        "contentHash": "4hyExeUWArJdiO6VlmwCUHgWPosvasauNpgB6pVP7swuwyahWHRqgWHKwj3t5h18wFezIMte6BmI4dqEzl1TYw=="
       },
       "Sentry.Extensions.Logging": {
         "type": "Transitive",
-        "resolved": "7.0.0",
-        "contentHash": "4i5HwiwmE9GMVphLLy2nPQmVibthyyfiw1DQGIXXwvomwYFxh8JRy9Mwn8cghPx9b8NAEthjnCyD0AZx923Ouw==",
+        "resolved": "7.0.1",
+        "contentHash": "id2zlzODGIjoU3jqwl/TJ1awJGvAXyI280FdmIMMsPu5lpEN2PbMzBjujDbu8tsLHmDu+sLHDCPbIy8AdGXJOA==",
         "dependencies": {
-          "Sentry": "7.0.0"
+          "Sentry": "7.0.1"
         }
       },
       "Serilog": {
